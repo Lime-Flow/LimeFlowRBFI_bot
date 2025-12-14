@@ -66,13 +66,18 @@ async def send_secret(callback: CallbackQuery):
 @router.message(F.text == "Курс BTC 💰")
 @router.message(Command("btc"))
 async def send_crypto(message: Message):
-    await message.answer("Узнаю курс... ⏳")
-    url = "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd"
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url) as response:
-            data = await response.json()
-            price = data['bitcoin']['usd']
-            await message.answer(f"💰 Биткоин: {price} $")
+    url = "https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT"
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as response:
+                data = await response.json()
+                if "price" in data:
+                    price = float(data["price"])
+                    await message.answer(f"💰 Цена Биткоина: {price:.2f} $")
+                else:
+                    await message.answer("Биржа не отдала цену.")
+    except Exception as e:
+        await message.answer(f"Ошибка: {e}")
 
 # Ловим кубик
 @router.message(F.text == "Бросить кубик 🎲")
